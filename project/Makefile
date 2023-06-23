@@ -6,6 +6,8 @@ MAIL_BINARY=mailerApp
 LISTENER_BINARY=listenerApp
 FRONT_BINARY=frontEndApp
 
+push_images: tag_all push_all
+
 ## up: starts all containers in the background without forcing build
 up:
 	@echo "Starting Docker images..."
@@ -60,12 +62,13 @@ build_listener:
 build_front_linux:
 	@echo "Building front end linux binary..."
 	cd ../front-end && env GOOS=linux CGO_ENABLED=0 go build -o ${FRONT_BINARY} ./cmd/web
+	docker build -f front-end.dockerfile -t front-end .
 	@echo "Done!"
 
 ## build_front: builds the front end binary
 build_front:
 	@echo "Building front end binary..."
-	cd ../front-end && env CGO_ENABLED=0 go build -o ${FRONT_END_BINARY} ./cmd/web
+	cd ../front-end && env  CGO_ENABLED=0 go build -o ${FRONT_END_BINARY} ./cmd/web
 	@echo "Done!"
 
 ## start: starts the front end
@@ -78,3 +81,23 @@ stop:
 	@echo "Stopping front end..."
 	@-pkill -SIGTERM -f "./${FRONT_END_BINARY}"
 	@echo "Stopped front end!"
+
+tag_all:
+	@echo "Tagging all images..."
+	docker tag project-broker-service 4weerawat/broker-service:1.0.0
+	docker tag project-listener-service 4weerawat/listener-service:1.0.0
+	docker tag project-authentication-service 4weerawat/authentication-service:1.0.0
+	docker tag project-logger-service 4weerawat/logger-service:1.0.0
+	docker tag project-mailer-service 4weerawat/mailer-service:1.0.0
+	docker tag front-end 4weerawat/front-end:1.0.0
+	@echo "Done!"
+
+push_all:
+	@echo "Pushing all images..."
+	docker push 4weerawat/broker-service:1.0.0
+	docker push 4weerawat/listener-service:1.0.0
+	docker push 4weerawat/authentication-service:1.0.0
+	docker push 4weerawat/logger-service:1.0.0
+	docker push 4weerawat/mailer-service:1.0.0
+	docker push 4weerawat/front-end:1.0.0
+	@echo "Done!"
